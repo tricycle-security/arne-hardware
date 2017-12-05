@@ -118,28 +118,35 @@ class MFRC522:
     GPIO.output(self.NRSTPD, 1)
     self.MFRC522_Init()
 
+
   def MFRC522_Reset(self):
     self.Write_MFRC522(self.CommandReg, self.PCD_RESETPHASE)
 
+
   def Write_MFRC522(self, addr, val):
     spi.transfer(((addr << 1) & 0x7E, val))
+
 
   def Read_MFRC522(self, addr):
     val = spi.transfer((((addr << 1) & 0x7E) | 0x80, 0))
     return val[1]
 
+
   def SetBitMask(self, reg, mask):
     tmp = self.Read_MFRC522(reg)
     self.Write_MFRC522(reg, tmp | mask)
+
 
   def ClearBitMask(self, reg, mask):
     tmp = self.Read_MFRC522(reg)
     self.Write_MFRC522(reg, tmp & (~mask))
 
+
   def AntennaOn(self):
     temp = self.Read_MFRC522(self.TxControlReg)
     if(~(temp & 0x03)):
       self.SetBitMask(self.TxControlReg, 0x03)
+
 
   def AntennaOff(self):
     self.ClearBitMask(self.TxControlReg, 0x03)
@@ -214,6 +221,7 @@ class MFRC522:
 
     return (status, backData, backLen)
 
+
   def MFRC522_Request(self, reqMode):
     status = None
     backBits = None
@@ -229,6 +237,7 @@ class MFRC522:
       status = self.MI_ERR
 
     return (status, backBits)
+
 
   def MFRC522_Anticoll(self):
     backData = []
@@ -255,6 +264,7 @@ class MFRC522:
         status = self.MI_ERR
 
     return (status, backData)
+
 
   def CalulateCRC(self, pIndata):
     self.ClearBitMask(self.DivIrqReg, 0x04)
@@ -295,6 +305,7 @@ class MFRC522:
     else:
       return 0
 
+
   def MFRC522_Auth(self, authMode, BlockAddr, Sectorkey, serNum):
     buff = []
 
@@ -328,8 +339,10 @@ class MFRC522:
     # Return the status
     return status
 
+
   def MFRC522_StopCrypto1(self):
     self.ClearBitMask(self.Status2Reg, 0x08)
+
 
   def MFRC522_Read(self, blockAddr):
     recvData = []
@@ -345,7 +358,7 @@ class MFRC522:
     i = 0
     if len(backData) == 16:
       print "Sector " + str(blockAddr) + " " + str(backData)
-      #return (blockAddr, backData)
+
 
   def MFRC522_ReadHex(self, blockAddr):
     recvData = []
@@ -361,6 +374,7 @@ class MFRC522:
     i = 0
     if len(backData) == 16:
       print "Sector " + str(blockAddr), [hex(x) for x in backData]
+
 
   def MFRC522_Write(self, blockAddr, writeData):
     buff = []
@@ -389,6 +403,7 @@ class MFRC522:
         if status == self.MI_OK:
             print "Data written"
 
+
   def MFRC522_DumpClassic1K(self, key, uid):
     i = 0
     while i < 64:
@@ -400,6 +415,7 @@ class MFRC522:
             print "Authentication error"
         i = i + 1
 
+
   def MFRC522_ReadTrailerBlock(self, authMode, key, uid):
         for block_addr in self.MIFARE_TRAILER_BLOCKS:
             status = self.MFRC522_Auth(authMode, block_addr, key, uid)
@@ -408,23 +424,54 @@ class MFRC522:
             else:
                 return
 
-  def MFRC522_WriteKeyToTrailerBlocks(self, newKey, authMode=None, currentKey=None, uid=None, ):
+
+  def MFRC522_AuthedWrite(self, authMode, key, sector, data, uid):
+    status = self.MFRC522_Auth(authMode, sector, key, uid)
+    if(status == self.MI_OK):
+      self.MFRC522_Write(sector, data)
+    else:
+      return
+
+  def MFRC522_WriteNewKey(self, authMode, currentKey, newKey, uid):
     accessBytes = [0xFF, 0x07, 0x80, 0x00] # standard access bytes for our cards
 
-    if(len(newKey) != 6):
-      print "Please provide a key of 6 bytes"
+    # check if the new key has exactly 6 chars
+    if(len(newKey) != 6 and newKey != None):
+      print "Invalid new key: key must be 6 bytes long"
+      return
+    # check whether all chars in the new key propperly encoded
+    elif not all(type(int()) == type(char) for char in newKey):
+      print "Please provide a hex representation of the key e.a. [0x31, 0x4f]"
       return
     else:
       payload = newKey + accessBytes + newKey
-      print payload
-      
-    #for block_addr in self.MIFARE_TRAILER_BLOCKS:
-     # status = self.MFRC522_Auth(authMode, block_addr, currentKey, uid)
-     # if(status == self.MI_OK):
-     #     self.MFRC522_Write(block_addr, newKey)
-     # else:
-     #     return
+      print "Payload to write: ", payload
+    
+    if(len(payload) == 16): # checking if lenght is 16 because we only want to write in buffers of 16 bytes
+      for block_addr in self.MIFARE_TRAILER_BLOCKS:
+        status = self.MFRC522_Auth(authMode, block_addr, currentKey, uid)
+        if(status == self.MI_OK):
+            self.MFRC522_Write(block_addr, payload)
+        else:
+            return
+    else:
+      print("Buffer is not 16 bytes long. Buffer size: "+str(len(payload)))
 
+
+  def MFRC522_GetKeyFromFile(self, path):
+    key = []
+    with open(path, 'r') as key_file:
+      data = key_file.readline()
+      for char in data:
+        key.append(ord(char))
+    
+    if(len(key) != 6):
+      print "Invalid key: key must by 6 bytes long "
+      return
+    else:
+      return key
+
+    
   def MFRC522_Init(self):
     GPIO.output(self.NRSTPD, 1)
 

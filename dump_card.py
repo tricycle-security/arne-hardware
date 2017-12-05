@@ -6,9 +6,7 @@ import MFRC522
 import signal
 
 continue_reading = True
-KEY_A, KEY_B = open("keyfile", "r").read().splitlines()
 
-print(KEY_A, KEY_B)
 # Capture SIGINT for cleanup when the script is aborted
 def end_read(signal, frame):
     global continue_reading
@@ -42,7 +40,7 @@ while continue_reading:
         # Print UID
         print "Card read UID: " + str(uid[0]) + "," + str(uid[1]) + "," + str(uid[2]) + "," + str(uid[3])
 
-        
+        key = MIFAREReader.MFRC522_GetKeyFromFile("keyfile")
         # Select the scanned tag
         MIFAREReader.MFRC522_SelectTag(uid)
 
