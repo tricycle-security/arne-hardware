@@ -1,4 +1,6 @@
 examples/
+.vscode/
+keyfile
 js/hellonode.js
 js/config.js
 js/node_modules/
