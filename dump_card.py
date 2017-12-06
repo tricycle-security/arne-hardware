@@ -45,7 +45,14 @@ while continue_reading:
         MIFAREReader.MFRC522_SelectTag(uid)
 
         # Dump the data
-        MIFAREReader.MFRC522_DumpClassic1K(key, uid)
+        try:
+            dump = MIFAREReader.MFRC522_DumpClassic1K(key, uid)
+
+            for data in dump:
+                print "Sector: " + str(data[0]) + " " + str(data[1])
+                
+        except Exception as err:
+            print err
 
         # Stop
         MIFAREReader.MFRC522_StopCrypto1()

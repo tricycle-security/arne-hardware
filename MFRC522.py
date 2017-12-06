@@ -300,7 +300,7 @@ class MFRC522:
     (status, backData, backLen) = self.MFRC522_ToCard(self.PCD_TRANSCEIVE, buf)
 
     if (status == self.MI_OK) and (backLen == 0x18):
-      print "Size: " + str(backData[0])
+      #print "Size: " + str(backData[0])
       return backData[0]
     else:
       return 0
@@ -332,9 +332,11 @@ class MFRC522:
 
     # Check if an error occurred
     if not(status == self.MI_OK):
-      print "AUTH ERROR!!"
+      raise Exception("Authentication Error")
+      #print "AUTH ERROR!!"
     if not (self.Read_MFRC522(self.Status2Reg) & 0x08) != 0:
-      print "AUTH ERROR(status2reg & 0x08) != 0"
+      raise Exception("Autheitication Error: status2reg & 0x88 not 0")
+      #print "AUTH ERROR(status2reg & 0x08) != 0"
 
     # Return the status
     return status
@@ -354,26 +356,12 @@ class MFRC522:
     (status, backData, backLen) = self.MFRC522_ToCard(
         self.PCD_TRANSCEIVE, recvData)
     if not(status == self.MI_OK):
-      print "Error while reading!"
+      raise Exception("Reading Error")
+      #print "Error while reading!"
     i = 0
     if len(backData) == 16:
-      print "Sector " + str(blockAddr) + " " + str(backData)
-
-
-  def MFRC522_ReadHex(self, blockAddr):
-    recvData = []
-    recvData.append(self.PICC_READ)
-    recvData.append(blockAddr)
-    pOut = self.CalulateCRC(recvData)
-    recvData.append(pOut[0])
-    recvData.append(pOut[1])
-    (status, backData, backLen) = self.MFRC522_ToCard(
-        self.PCD_TRANSCEIVE, recvData)
-    if not(status == self.MI_OK):
-      print "Error while reading!"
-    i = 0
-    if len(backData) == 16:
-      print "Sector " + str(blockAddr), [hex(x) for x in backData]
+      return (blockAddr, backData)
+      #print "Sector " + str(blockAddr) + " " + str(backData)
 
 
   def MFRC522_Write(self, blockAddr, writeData):
@@ -387,7 +375,7 @@ class MFRC522:
     if not(status == self.MI_OK) or not(backLen == 4) or not((backData[0] & 0x0F) == 0x0A):
         status = self.MI_ERR
 
-    print str(backLen) + " backdata &0x0F == 0x0A " + str(backData[0] & 0x0F)
+    #print str(backLen) + " backdata &0x0F == 0x0A " + str(backData[0] & 0x0F)
     if status == self.MI_OK:
         i = 0
         buf = []
@@ -399,63 +387,67 @@ class MFRC522:
         buf.append(crc[1])
         (status, backData, backLen) = self.MFRC522_ToCard(self.PCD_TRANSCEIVE, buf)
         if not(status == self.MI_OK) or not(backLen == 4) or not((backData[0] & 0x0F) == 0x0A):
-            print "Error while writing"
+            #print "Error while writing"
+            raise Exception("Writing Error")
         if status == self.MI_OK:
-            print "Data written"
+            #print "Data written"
+            return self.MI_OK
 
 
   def MFRC522_DumpClassic1K(self, key, uid):
     i = 0
+    data = []
+
     while i < 64:
         status = self.MFRC522_Auth(self.PICC_AUTHENT1A, i, key, uid)
         # Check if authenticated
         if status == self.MI_OK:
-            self.MFRC522_Read(i)
+            data.append(self.MFRC522_Read(i))
         else:
-            print "Authentication error"
+            raise Exception("Authentication Error")
         i = i + 1
-
+    return data
 
   def MFRC522_ReadTrailerBlock(self, authMode, key, uid):
         for block_addr in self.MIFARE_TRAILER_BLOCKS:
             status = self.MFRC522_Auth(authMode, block_addr, key, uid)
             if(status == self.MI_OK):
-                self.MFRC522_ReadHex(block_addr)
+                self.MFRC522_Read(block_addr)
             else:
-                return
+                raise Exception("Read failed")
 
 
   def MFRC522_AuthedWrite(self, authMode, key, sector, data, uid):
     status = self.MFRC522_Auth(authMode, sector, key, uid)
     if(status == self.MI_OK):
       self.MFRC522_Write(sector, data)
+      return self.MI_OK
     else:
-      return
+      raise Exception("Authentication Error")
 
   def MFRC522_WriteNewKey(self, authMode, currentKey, newKey, uid):
     accessBytes = [0xFF, 0x07, 0x80, 0x00] # standard access bytes for our cards
 
     # check if the new key has exactly 6 chars
     if(len(newKey) != 6 and newKey != None):
-      print "Invalid new key: key must be 6 bytes long"
-      return
+      raise Exception("Invalid new key: key must be 6 bytes long")
+      #print "Invalid new key: key must be 6 bytes long"
     # check whether all chars in the new key propperly encoded
     elif not all(type(int()) == type(char) for char in newKey):
-      print "Please provide a hex representation of the key e.a. [0x31, 0x4f]"
-      return
+      raise Exception("Invalid key type: Please provide a hex representation of key e.a. [0x31, 0x4f]")
+      #print "Please provide a hex representation of the key e.a. [0x31, 0x4f]"
     else:
       payload = newKey + accessBytes + newKey
-      print "Payload to write: ", payload
+      #print "Payload to write: ", payload
     
     if(len(payload) == 16): # checking if lenght is 16 because we only want to write in buffers of 16 bytes
       for block_addr in self.MIFARE_TRAILER_BLOCKS:
         status = self.MFRC522_Auth(authMode, block_addr, currentKey, uid)
         if(status == self.MI_OK):
             self.MFRC522_Write(block_addr, payload)
-        else:
-            return
     else:
-      print("Buffer is not 16 bytes long. Buffer size: "+str(len(payload)))
+      raise Exception("Buffer size error: Buffer size is not 16 bytes. Buffer size: "+str(len(payload)))
+      #print("Buffer is not 16 bytes long. Buffer size: "+str(len(payload)))
 
 
   def MFRC522_GetKeyFromFile(self, path):
@@ -466,8 +458,8 @@ class MFRC522:
         key.append(ord(char))
     
     if(len(key) != 6):
-      print "Invalid key: key must by 6 bytes long "
-      return
+      raise Exception("Invalid key: key must be 6 bytes long")
+      #print "Invalid key: key must by 6 bytes long "
     else:
       return key
 
