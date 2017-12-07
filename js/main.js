@@ -28,12 +28,14 @@ var configFile = require('./config.js');
     var responder = (snapshot.val());
     if (responder !== true) 
     {
-      Throw ("User is not a responder");
+     throw new Error('User is not a responder'); // This is messy I know will make catch and try block. 
+     console.log("You are not a user!");
     }
 
     else 
     {
-      console.log("You are checked in!");
+      changeStatus(uuid); //send if user is checked in or checked out
+      console.log("Checked in succesfully");
     }
   });
 };
@@ -44,7 +46,7 @@ var configFile = require('./config.js');
     {
 
       uuid: uuid,
-      onLocation: true
+      onLocation: false
       
     });
   }
@@ -52,16 +54,13 @@ var configFile = require('./config.js');
   firebase.auth().onAuthStateChanged(function(user) 
   {
     if (user!=null)   {
-
       console.log("Logged in succesfully"); //check if authtication succeeded
       checkIfUserIsResponder(uuid);
-      changeStatus(uuid); //send if user is checked in or checked out
+      
     
     } else {
       console.log("Not logged in");
     }
-
-
   });
 
 
