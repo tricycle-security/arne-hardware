@@ -23,7 +23,7 @@ You can use [this](https://i.imgur.com/DRsymlo.png) image for reference.
 | SCK  | 23    | GPIO11 - SCLK | Cherry|
 | MOSI | 19    | GPIO10 - MOSI | Blue  |
 | MISO | 21    | GPIO9 - MISO  | Green |
-| IRQ  | -     | -             | Yellow|
+| IRQ  | 18    | GPIO24        | Yellow|
 | GND  | 20    | GND           | Orange|
 | RST  | 22    | GPIO25        | Red   |
 | 3.3V | 17    | 3V3           | Brown |

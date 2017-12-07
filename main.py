@@ -43,7 +43,7 @@ while continue_reading:
         key = MIFAREReader.MFRC522_GetKeyFromFile("keyfile")
         
         # Authenticate to the selected tag
-        authStatus = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 1, key, uid)
+        authStatus = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 1, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF], uid)
         
         # Read block 1 from selected card
         if authStatus == MIFAREReader.MI_OK:
