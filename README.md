@@ -27,3 +27,12 @@ You can use [this](https://i.imgur.com/DRsymlo.png) image for reference.
 | GND  | 20    | GND           | Orange|
 | RST  | 22    | GPIO25        | Red   |
 | 3.3V | 17    | 3V3           | Brown |
+
+
+## Setting up NodeJS
+
+To make the connection to Firebase you will need to install NodeJS. 
+Run the following commands as root in a terminal:
+Step 1. npm install npm@latest -g //Install latest version of NPM.
+Step 2. npm init //initialize 
+Step 3. npm install --save firebase //Do this command in the JS folder!
