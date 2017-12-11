@@ -66,13 +66,30 @@ function validiateAuthtentication()
 
     else 
     {
-      changeStatus(uuid);
-      //checkInOrCheckOut(uuid); //send if user is checked in or checked out
+      checkIfUserIsResponder(uuid);
       console.log("Checked in succesfully");  
     }
   });
 }
 
+function checkIfUserIsResponder(uuid) 
+{
+  database.ref('userinfo/' + 'userstatus/' + uuid + '/responder').once('value').then(function(snapshot)
+  {
+    var responder = (snapshot.val());
+    if (responder !== true) 
+    {
+      throw new Error('User is not a responder');
+    }
+
+    else 
+    {
+      changeStatus(uuid);
+    }
+
+  });  
+};
+ 
 function changeStatus(uuid) //write the status data to the Firbase Database. 
 {
   database.ref('currentstatus/' + uuid).once('value').then(function(snapshot) 
