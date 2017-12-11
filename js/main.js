@@ -2,15 +2,15 @@ var firebase = require('firebase');
 var configFile = require('./config.js');
 var pyshell = require('python-shell');
 
-firebase.initializeApp(configFile.config); 
-var uuid;
+ firebase.initializeApp(configFile.config); 
+ console.log("Please check in");
+ var cardID;
  rfid = new pyshell('main.py');
-
  rfid.on('message', function(message)
 
  {
-  uuid = message; 
-  console.log("CardID:" + uuid);
+  cardID = message; 
+  console.log("CardID:" + cardID);
   initializeAndAuthenticate(); 
 
  });
@@ -27,41 +27,41 @@ function initializeAndAuthenticate()
     console.log(errorCode);
     console.log(errorMessage);
   });
-console.log("Authenticating...");
-validiateAuthtentication();
+ console.log("Authenticating...");
+ validiateAuthtentication();
 }
- // uuid = 'EkbgGG7UodDNotGb' //uuid of Hans Hoogerwerf
-  var database = firebase.database(); //get reference to the database service
+ // cardID = 'EkbgGG7UodDNotGb' //cardID of Hans Hoogerwerf
+ var database = firebase.database(); //get reference to the database service
 
-  function checkIfCardIsActive(uuid) 
+ function checkIfCardIsActive(cardID) 
 {
-  database.ref('cardinfo/' + uuid + '/status').once('value').then(function(snapshot)
+  database.ref('cardinfo/' + cardID + '/status').once('value').then(function(snapshot)
+  
   {
-    var uuidcheck = (snapshot.val());
-    console.log(uuidcheck);
-    if (uuidcheck !== 'active')
+    var cardIDcheck = (snapshot.val());
+    console.log(cardIDcheck);
+    if (cardIDcheck !== 'active') //check if card is activated by the administrator
     {
       throw new Error('Card is not active!');
     } 
-    
+
     else 
     {
-      changeStatus(uuid); //send if user is checked in or checked out
+      changeStatus(cardID); //send if user is checked in or checked out
       console.log("Checked in succesfully");  
     }
   });
 }
-
-  function changeStatus(uuid) //write the status data to the Firbase Database. 
+  function changeStatus(cardID) //write the status data to the Firbase Database. 
   {
-    database.ref('currentstatus/'+ uuid).set( 
+    database.ref('currentstatus/'+ cardID).set( 
     {
-      uuid: uuid,
-      onLocation: false
+      cardID: cardID,
+      onLocation: true
       
     });
   }
-function validiateAuthtentication(uuid)
+function validiateAuthtentication()
 { 
   console.log("Validating Authentication...");
   firebase.auth().onAuthStateChanged(function(user) 
@@ -69,7 +69,7 @@ function validiateAuthtentication(uuid)
     if (user!=null)  
     {
       console.log("Logged in succesfully"); //check if authtication succeeded
-      checkIfCardIsActive();
+      checkIfCardIsActive(cardID);
       
     } else 
      {
