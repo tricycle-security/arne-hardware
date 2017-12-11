@@ -35,29 +35,30 @@ function initializeAndAuthenticate()
 
  function checkIfCardIsActive(cardID) 
 {
-  database.ref('cardinfo/' + cardID + '/status').once('value').then(function(snapshot)
+  database.ref('cardinfo/' + cardID).once('value').then(function(snapshot)
   
   {
-    var cardIDcheck = (snapshot.val());
-    console.log(cardIDcheck);
-    if (cardIDcheck !== 'active') //check if card is activated by the administrator
+    var cardStatus = (snapshot.val().status);
+    var uuid = (snapshot.val().uuid);
+    console.log(cardStatus);
+    if (cardStatus !== 'active') //check if card is activated by the administrator
     {
       throw new Error('Card is not active!');
     } 
 
     else 
     {
-      changeStatus(cardID); //send if user is checked in or checked out
+      changeStatus(uuid); //send if user is checked in or checked out
       console.log("Checked in succesfully");  
     }
   });
 }
-  function changeStatus(cardID) //write the status data to the Firbase Database. 
+  function changeStatus(uuid) //write the status data to the Firbase Database. 
   {
-    database.ref('currentstatus/'+ cardID).set( 
+    database.ref('currentstatus/'+ uuid).set( 
     {
-      cardID: cardID,
-      onLocation: true
+      onLocation: true,
+      uuid: uuid
       
     });
   }
