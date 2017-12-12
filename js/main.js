@@ -1,13 +1,12 @@
 var firebase = require('firebase');
 var configFile = require('./config.js');
-//var pyshell = require('python-shell');
+var pyshell = require('python-shell');
 
  firebase.initializeApp(configFile.config);  //initialize Firebase
  console.log("Please check in");
- var cardID = "EkbgGG7UodDNotGb";
- //var onLocation;
- initializeAndAuthenticate(); //manual checking
- /*
+ var cardID;
+ //initializeAndAuthenticate(); //manual checking
+ 
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
 
@@ -17,7 +16,7 @@ var configFile = require('./config.js');
   initializeAndAuthenticate(); 
 
  });
-*/
+
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
@@ -42,7 +41,6 @@ function validiateAuthtentication()
     if (user!=null)  
     {
       console.log("Logged in succesfully"); //check if authtication succeeded
-      //checkInOrCheckOut();
       checkIfCardIsActive(cardID);
       
     } else 
@@ -58,7 +56,6 @@ function validiateAuthtentication()
   {
     var cardStatus = (snapshot.val().status);
     var uuid = (snapshot.val().uuid);
-    //console.log(cardStatus);
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
       throw new Error('Card is not active!');
