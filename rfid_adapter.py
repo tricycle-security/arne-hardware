@@ -6,9 +6,6 @@ class rfid_adapter(RFID):
     FACTORY_KEY = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
     RUN = True
 
-    def superduper(self):
-        return super(rfid_adapter, self)
-    
     def get_key_from_file(self, path):
         key = []
         error = False
