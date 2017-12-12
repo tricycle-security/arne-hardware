@@ -7,6 +7,12 @@ class rfid_adapter(RFID):
     RUN = True
 
     def get_key_from_file(self, path):
+        """
+        Gets the contents of the given file and tries to encode this into a byte / litteral array
+        path -- string path to file to read key from
+
+        Returns error state and key
+        """
         key = []
         error = False
 
@@ -22,6 +28,9 @@ class rfid_adapter(RFID):
     
     # capture SIGINT for cleanup when the script is aborted
     def end_read(self, signal, frame):
+        """
+        Cleans up the GPIO pins and exists the script gracefully
+        """
         print("\nCtrl+C captured, ending read.")
         # call the cleanup function of the RFID instance created by initializing this class
         super(rfid_adapter, self).cleanup()
