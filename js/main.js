@@ -4,9 +4,8 @@ var pyshell = require('python-shell');
 
  firebase.initializeApp(configFile.config);  //initialize Firebase
  console.log("Please check in");
- var cardID;
- //initializeAndAuthenticate(); //manual checking
  
+ var cardID;
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
 
@@ -20,7 +19,9 @@ var pyshell = require('python-shell');
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
+
   firebase.auth().signInWithEmailAndPassword(configFile.email, configFile.pass).catch(function(error)
+
   { // Handle Errors here.
     var errorCode = error.code;
     var errorMessage = error.message;
@@ -69,7 +70,7 @@ function validiateAuthtentication()
   });
 }
 
-function checkIfUserIsResponder(uuid) 
+function checkIfUserIsResponder(uuid)  //It is important that a user is a responder, because only responders can check in (to get alerts)
 {
   database.ref('userinfo/' + 'userstatus/' + uuid + '/responder').once('value').then(function(snapshot)
   {
@@ -83,7 +84,6 @@ function checkIfUserIsResponder(uuid)
     {
       changeStatus(uuid);
     }
-
   });  
 };
  
@@ -98,5 +98,4 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
   });
-  console.log("changed status");
 }
