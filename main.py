@@ -41,7 +41,7 @@ def emit_userid():
     """
     Tries to authenticate to a scanned card and emit its contents for further prosessing
 
-    Returns userid
+    Emits error state and message
     """
     # wait for a rfid tag event to continue the loop
     rfid.wait_for_tag()
@@ -56,7 +56,7 @@ def emit_userid():
             if not rfid.select_tag(uid):
                 # retrieve authentication key from file
                 error, key = rfid.get_key_from_file('keyfile')
-                # authenticate to block 1 with key
+                # authenticate to block with key
                 if not error and not rfid.card_auth(rfid.auth_a, BLOCK, key, uid):
                     (error, data) = rfid.read(BLOCK)
                     if not error:
@@ -66,9 +66,10 @@ def emit_userid():
                 else:
                     print((0, 'noath'))
                     sys.stdout.flush()
-                rfid.stop_crypto()  # deauthenticate the card and clear keys
     else:
-        print((0, 'unknowncard')) 
+        print((0, 'unknowncard'))
+    
+    rfid.stop_crypto()  # deauthenticate the card and clear keys
 
 def prepare_card():
     """
@@ -106,6 +107,11 @@ def prepare_card():
             rfid.RUN = False
 
 def generate_userid():
+    """
+    Generated a pseudo-random userid to be written to card
+
+    Returns a userid byte array
+    """
     user_id = map(ord, ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for c in range(16)))
     return user_id
 
