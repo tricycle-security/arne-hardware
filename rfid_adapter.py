@@ -35,3 +35,4 @@ class rfid_adapter(RFID):
         # call the cleanup function of the RFID instance created by initializing this class
         super(rfid_adapter, self).cleanup()
         raise Exception()
+        
