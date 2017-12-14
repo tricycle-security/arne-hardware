@@ -1,21 +1,36 @@
 var firebase = require('firebase');
 var configFile = require('./config.js');
-var pyshell = require('python-shell');
+var http = require('http');
+    fs = require('fs');
+
+    fs.readFile('html/pleasecheckin.html', function (err, html) {
+      if (err) {
+          throw err; 
+      }       
+      http.createServer(function(request, response) {  
+          response.writeHeader(200, {"Content-Type": "text/html"});  
+          response.write(html);  
+          response.end();  
+      }).listen(8000);
+  });
 
  firebase.initializeApp(configFile.config);  //initialize Firebase
+
  console.log("Please check in");
- 
- var cardID;
+ var cardID = "EkbgGG7UodDNotGb"
+ initializeAndAuthenticate(); 
+
+ /*var pyshell = require('python-shell');
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
 
  {
   cardID = message; 
   console.log("CardID:" + cardID);
-  initializeAndAuthenticate(); 
+  
 
  });
-
+*/
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
@@ -43,16 +58,13 @@ function validiateAuthtentication()
     {
       console.log("Logged in succesfully"); //check if authtication succeeded
       checkIfCardIsActive(cardID);
-      
-    } else 
-     {
-      console.log("Not logged in");
-     }
+      return;  
+    } 
   });
 }
  
  function checkIfCardIsActive(cardID) 
-{
+{ console.log("Checking if card is active....")
   database.ref('cardinfo/' + cardID).once('value').then(function(snapshot)
   {
     var cardStatus = (snapshot.val().status);
@@ -64,8 +76,9 @@ function validiateAuthtentication()
 
     else 
     {
+      console.log("Checking if user is Responder..."); 
       checkIfUserIsResponder(uuid);
-      console.log("Checked in succesfully");  
+       
     }
   });
 }
@@ -97,5 +110,11 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         onLocation: onLocation,
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
+      if (onLocation==true) {
+      console.log("Succesfully checked in!") 
+    }
+    else {
+      console.log("Succesfully checked out!") 
+    }
   });
 }
