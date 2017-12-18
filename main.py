@@ -81,17 +81,14 @@ def emit_userid():
                         payload = ''.join(chr(integer) for integer in data)
                         print((1, payload))
                         sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
+                        rfid.stop_crypto()  # deauthenticate the card and clear keys
                 else:
-                    print((0, 'noath'))
+                    print((0, 'no_auth'))
                     sys.stdout.flush()
 
-    elif tag_type is None:
-        pass
-    else:
-        print((0, 'unkowncard'))
+    elif tag_type is not None:
+        print((0, 'unkown_card'))
         sys.stdout.flush()
-    
-    rfid.stop_crypto()  # deauthenticate the card and clear keys
 
 def prepare_card():
     """
