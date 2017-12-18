@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
 import argparse
@@ -7,42 +7,56 @@ import sys
 import rfid_adapter
 import random
 import string
+import time
 
-# store commandline arguments
-parser = argparse.ArgumentParser(description='Trycicle security RFID card reader and preparer')
-required = parser.add_argument_group('required argument(s) choose one')
-optional = parser.add_argument_group('optional arguments')
-required.add_argument('-r', '--read', action='store_true', help='Read RFID Mifare Classic cards')
-required.add_argument('-p', '--prepare', action='store_true', help='Prepare cards with custom key')
-args = parser.parse_args()
 # block where our data resides
 BLOCK = 1
+CURRENT_SCAN_TIME = None
+CURRENT_CARD = None
 # create rfid_adapter class
 rfid = rfid_adapter.rfid_adapter()
 # create rfid util class which makes helper function available
 util = rfid.util()
-
 # hook to SIGINT to execute the cleanup script
 signal.signal(signal.SIGINT, rfid.end_read)
 
-# main loop
-def main(argv):
-    if args.read and args.prepare:
+def parse_args():
+    # store commandline arguments
+    parser = argparse.ArgumentParser(description='Trycicle security RFID card reader and preparer')
+    required = parser.add_argument_group('required argument(s) choose one')
+    optional = parser.add_argument_group('optional arguments')
+    required.add_argument('-r', '--read', action='store_true', help='Read RFID Mifare Classic cards')
+    required.add_argument('-p', '--prepare', action='store_true', help='Prepare cards with custom key')
+    args = parser.parse_args()
+
+    if not args.read and not args.prepare:
         parser.print_help()
         exit()
-    if args.read:
+    elif args.read and args.prepare:
+        parser.print_help()
+        exit()
+    return args
+
+# main loop
+def main():
+    args = parse_args()
+
+    if args.read and not args.prepare:
         while rfid.RUN:
             emit_userid()
-    if args.prepare:
+    if args.prepare and not args.read:
         while rfid.RUN:
             prepare_card()
+
 
 def emit_userid():
     """
     Tries to authenticate to a scanned card and emit its contents for further prosessing
 
-    Returns userid
+    Emits error state and message
     """
+    global CURRENT_CARD
+    global CURRENT_SCAN_TIME
     # wait for a rfid tag event to continue the loop
     rfid.wait_for_tag()
     # request tag type from tag
@@ -51,24 +65,30 @@ def emit_userid():
     if not error and tag_type == 16:
         # get the uid of the tag
         (error, uid) = rfid.anticoll() # a method to get uid from cards in sequence
-        if not error:
-            # select tag to use for authentication
+        if not error and (CURRENT_CARD != uid or (time.time() - CURRENT_SCAN_TIME > 5)):            
+            # set globals for card timeout
+            CURRENT_CARD = uid
+            CURRENT_SCAN_TIME = time.time()
+
+            # select tag to use for authentication 
             if not rfid.select_tag(uid):
                 # retrieve authentication key from file
                 error, key = rfid.get_key_from_file('keyfile')
-                # authenticate to block 1 with key
+                # authenticate to block with key
                 if not error and not rfid.card_auth(rfid.auth_a, BLOCK, key, uid):
                     (error, data) = rfid.read(BLOCK)
                     if not error:
                         payload = ''.join(chr(integer) for integer in data)
                         print((1, payload))
-                        sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message
+                        sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
+                        rfid.stop_crypto()  # deauthenticate the card and clear keys
                 else:
-                    print((0, 'noath'))
+                    print((0, 'no_auth'))
                     sys.stdout.flush()
-                rfid.stop_crypto()  # deauthenticate the card and clear keys
-    else:
-        print((0, 'unknowncard')) 
+
+    elif tag_type is not None:
+        print((0, 'unkown_card'))
+        sys.stdout.flush()
 
 def prepare_card():
     """
@@ -106,8 +126,13 @@ def prepare_card():
             rfid.RUN = False
 
 def generate_userid():
+    """
+    Generated a pseudo-random userid to be written to card
+
+    Returns a userid byte array
+    """
     user_id = map(ord, ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for c in range(16)))
     return user_id
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
