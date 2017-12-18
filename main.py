@@ -12,7 +12,7 @@ import time
 # block where our data resides
 BLOCK = 1
 CURRENT_SCAN_TIME = None
-CURRENT_CARD = (0xFF)
+CURRENT_CARD = None
 # create rfid_adapter class
 rfid = rfid_adapter.rfid_adapter()
 # create rfid util class which makes helper function available
@@ -65,7 +65,11 @@ def emit_userid():
     if not error and tag_type == 16:
         # get the uid of the tag
         (error, uid) = rfid.anticoll() # a method to get uid from cards in sequence
-        if not error and (CURRENT_CARD != uid or (time.time() - CURRENT_SCAN_TIME > 5)):
+        if not error and (CURRENT_CARD != uid or (time.time() - CURRENT_SCAN_TIME > 5)):            
+            # set globals for card timeout
+            CURRENT_CARD = uid
+            CURRENT_SCAN_TIME = time.time()
+
             # select tag to use for authentication 
             if not rfid.select_tag(uid):
                 # retrieve authentication key from file
@@ -76,8 +80,6 @@ def emit_userid():
                     if not error:
                         payload = ''.join(chr(integer) for integer in data)
                         print((1, payload))
-                        CURRENT_CARD = uid
-                        CURRENT_SCAN_TIME = time.time()
                         sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
                 else:
                     print((0, 'noath'))
