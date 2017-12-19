@@ -11,6 +11,8 @@ var pyshell = require('python-shell');
 
  {
   cardID = message; 
+  var obj = JSON.parse(message)
+  cardID=obj.payload; 
   console.log("CardID:" + cardID);
   initializeAndAuthenticate(); 
 
@@ -41,7 +43,7 @@ function validiateAuthtentication()
   {
     if (user!=null)  
     {
-      console.log("Logged in succesfully"); //check if authtication succeeded
+      console.log("Pole Logged in succesfully"); //check if authtication succeeded
       checkIfCardIsActive(cardID);
       
     } else 
@@ -59,7 +61,7 @@ function validiateAuthtentication()
     var uuid = (snapshot.val().uuid);
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
-      throw new Error('Card is not active!');
+      console.log("Card is not authorized to check in"); 
     } 
 
     else 
@@ -77,7 +79,7 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     var responder = (snapshot.val());
     if (responder !== true) 
     {
-      throw new Error('User is not a responder');
+      console.log("Card is not authorized to check in"); 
     }
 
     else 
