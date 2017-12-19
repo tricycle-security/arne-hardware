@@ -9,6 +9,7 @@ import random
 import string
 import time
 import RPi.GPIO as GPIO
+from json import JSONEncoder
 
 # supress gpio warning messages to not flood stdout
 GPIO.setwarnings(False)
@@ -74,15 +75,16 @@ def emit_userid():
                     (error, data) = rfid.read(BLOCK)
                     if not error:
                         payload = ''.join(chr(integer) for integer in data)
-                        print((1, payload))
+                        output = JSONEncoder().encode({"payload": payload, "error": 0})
+                        print(output)
                         sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
                         rfid.stop_crypto()  # deauthenticate the card and clear keys
                 else:
-                    print((0, 'no_auth'))
+                    print(JSONEncoder().encode({"payload": "noauth", "error": 1}))
                     sys.stdout.flush()
 
     elif tag_type is not None:
-        print((0, 'unkown_card'))
+        print(JSONEncoder().encode({"payload": "unknowncard", "error": 1}))
         sys.stdout.flush()
 
 def prepare_card():
