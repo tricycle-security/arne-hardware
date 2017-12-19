@@ -1,20 +1,15 @@
 var firebase = require('firebase');
 var configFile = require('./config.js');
-var http = require('http');
-    fs = require('fs');
+var html = require('./server.js');
 
-    fs.readFile('html/pleasecheckin.html', function (err, html) {
-      if (err) {
-          throw err; 
-      }       
-      http.createServer(function(request, response) {  
-          response.writeHeader(200, {"Content-Type": "text/html"});  
-          response.write(html);  
-          response.end();  
-      }).listen(8000);
-  });
-
- firebase.initializeApp(configFile.config);  //initialize Firebase
+/*
+html1="./html/pleasecheckin.html"
+html2="./html/checkedin.html"
+html3="./html/checkedout.html"
+*/
+//html.startWebserver();
+html.sendStatus('Please check in');
+firebase.initializeApp(configFile.config);  //initialize Firebase
 
  console.log("Please check in");
  var cardID = "EkbgGG7UodDNotGb"
@@ -112,9 +107,11 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
       });
       if (onLocation==true) {
       console.log("Succesfully checked in!") 
+      html.sendStatus('Succesfully checked in!'); 
     }
     else {
-      console.log("Succesfully checked out!") 
+      console.log("Succesfully checked out!")
+      html.sendStatus('Succesfully checked out!'); 
     }
   });
 }
