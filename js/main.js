@@ -97,5 +97,11 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         onLocation: onLocation,
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
+      if (onLocation==true) {
+        console.log("Succesfully checked in!") 
+      }
+      else {
+        console.log("Succesfully checked out!")
+      }
   });
 }
