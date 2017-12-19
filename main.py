@@ -3,20 +3,8 @@
 
 import argparse
 import signal
-import sys
 import rfid_adapter
-import random
-import string
-import time
-import RPi.GPIO as GPIO
-from json import JSONEncoder
 
-# supress gpio warning messages to not flood stdout
-GPIO.setwarnings(False)
-# block where our data resides
-BLOCK = 1
-CURRENT_SCAN_TIME = None
-CURRENT_CARD = None
 # create rfid_adapter class
 rfid = rfid_adapter.rfid_adapter()
 # create rfid util class which makes helper function available
@@ -41,51 +29,11 @@ def main():
             prepare_card()
     elif not args.prepare:
         while rfid.RUN:
-            emit_userid()
+            output = rfid.emit_userid()
+            if output is not None:
+                print(output)
     else:
         exit()
-
-def emit_userid():
-    """
-    Tries to authenticate to a scanned card and emit its contents for further prosessing
-
-    Emits error state and message
-    """
-    global CURRENT_CARD
-    global CURRENT_SCAN_TIME
-    # wait for a rfid tag event to continue the loop
-    rfid.wait_for_tag()
-    # request tag type from tag
-    (error, tag_type) = rfid.request()
-    # if tag is present and is a mifare card
-    if not error and tag_type == 16:
-        # get the uid of the tag
-        (error, uid) = rfid.anticoll() # a method to get uid from cards in sequence
-        if not error and (CURRENT_CARD != uid or (time.time() - CURRENT_SCAN_TIME > 5)):            
-            # set globals for card timeout
-            CURRENT_CARD = uid
-            CURRENT_SCAN_TIME = time.time()
-
-            # select tag to use for authentication 
-            if not rfid.select_tag(uid):
-                # retrieve authentication key from file
-                error, key = rfid.get_key_from_file('keyfile')
-                # authenticate to block with key
-                if not error and not rfid.card_auth(rfid.auth_a, BLOCK, key, uid):
-                    (error, data) = rfid.read(BLOCK)
-                    if not error:
-                        payload = ''.join(chr(integer) for integer in data)
-                        output = JSONEncoder().encode({"payload": payload, "error": 0})
-                        print(output)
-                        sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
-                        rfid.stop_crypto()  # deauthenticate the card and clear keys
-                else:
-                    print(JSONEncoder().encode({"payload": "noauth", "error": 1}))
-                    sys.stdout.flush()
-
-    elif tag_type is not None:
-        print(JSONEncoder().encode({"payload": "unknowncard", "error": 1}))
-        sys.stdout.flush()
 
 def prepare_card():
     """
@@ -121,15 +69,6 @@ def prepare_card():
                 print("Could not get key from file")
             util.deauth()
             rfid.RUN = False
-
-def generate_userid():
-    """
-    Generated a pseudo-random userid to be written to card
-
-    Returns a userid byte array
-    """
-    user_id = map(ord, ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for c in range(16)))
-    return user_id
 
 if __name__ == "__main__":
     main()
