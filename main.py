@@ -8,7 +8,10 @@ import rfid_adapter
 import random
 import string
 import time
+import RPi.GPIO as GPIO
 
+# supress gpio warning messages to not flood stdout
+GPIO.setwarnings(False)
 # block where our data resides
 BLOCK = 1
 CURRENT_SCAN_TIME = None
@@ -23,31 +26,23 @@ signal.signal(signal.SIGINT, rfid.end_read)
 def parse_args():
     # store commandline arguments
     parser = argparse.ArgumentParser(description='Trycicle security RFID card reader and preparer')
-    required = parser.add_argument_group('required argument(s) choose one')
-    optional = parser.add_argument_group('optional arguments')
-    required.add_argument('-r', '--read', action='store_true', help='Read RFID Mifare Classic cards')
-    required.add_argument('-p', '--prepare', action='store_true', help='Prepare cards with custom key')
+    parser.add_argument('-p', '--prepare', action='store_true', help='Prepare cards with custom key')
     args = parser.parse_args()
 
-    if not args.read and not args.prepare:
-        parser.print_help()
-        exit()
-    elif args.read and args.prepare:
-        parser.print_help()
-        exit()
     return args
 
 # main loop
 def main():
     args = parse_args()
 
-    if args.read and not args.prepare:
-        while rfid.RUN:
-            emit_userid()
-    if args.prepare and not args.read:
+    if args.prepare:
         while rfid.RUN:
             prepare_card()
-
+    elif not args.prepare:
+        while rfid.RUN:
+            emit_userid()
+    else:
+        exit()
 
 def emit_userid():
     """
@@ -110,9 +105,9 @@ def prepare_card():
             # set the auth key for the current selected card with the factory key
             util.auth(rfid.auth_a, (0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF))
             # generate a pseudo-random userid
-            user_id - generate_userid()
+            user_id = generate_userid()
             # write the userid to our block
-            util.rewrite(BLOCK, user_id())
+            util.rewrite(BLOCK, user_id)
             # get the key from the keyfile
             error, new_key = rfid.get_key_from_file('keyfile')
             # change key for every trailer block
