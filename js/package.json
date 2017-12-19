@@ -2,6 +2,7 @@
   "requires": true,
   "lockfileVersion": 1,
   "dependencies": {
+    "firebase": "^4.8.1",
     "socket.io": "^2.0.4"
   },
   "name": "js",
