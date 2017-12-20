@@ -1,12 +1,11 @@
 var firebase = require('firebase');
 var configFile = require('./config.js');
-//var pyshell = require('python-shell');
+var pyshell = require('python-shell');
 
  firebase.initializeApp(configFile.config);  //initialize Firebase
  console.log("Please check in");
- initializeAndAuthenticate(); 
- var cardID = "EkbgGG7UodDNotGb"
- /*   
+ 
+ var cardID;
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
  {
@@ -18,10 +17,10 @@ var configFile = require('./config.js');
   var obj = JSON.parse(message)
   cardID=obj.payload; 
   console.log("CardID:" + cardID);
-  
+  initializeAndAuthenticate(); 
 
  });
-*/
+
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
