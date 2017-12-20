@@ -8,9 +8,14 @@ var pyshell = require('python-shell');
  var cardID;
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
+ {
+  if (message == "E1" || message == "E2") {
+  console.log('Card is not valid')
+  return; 
+ }
 
  {
-  cardID = message; 
+  cardID = message;
   var obj = JSON.parse(message)
   cardID=obj.payload; 
   console.log("CardID:" + cardID);
