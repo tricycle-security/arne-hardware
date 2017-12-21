@@ -15,6 +15,11 @@ var pyshell = require('python-shell');
  }
   cardID = message;
   var obj = JSON.parse(message)
+  if (obj.payload=="unknowncard" || obj.payload=="noauth") 
+  {
+    console.log(obj.payload)
+    return;
+  }
   cardID=obj.payload; 
   console.log("CardID:" + cardID);
   initializeAndAuthenticate(); 
