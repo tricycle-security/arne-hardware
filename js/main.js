@@ -15,7 +15,7 @@ var pyshell = require('python-shell');
  }
   cardID = message;
   var obj = JSON.parse(message)
-  if (obj.payload=="unknowncard" || obj.payload=="noauth") 
+  if (obj.payload=="Unknown Card" || obj.payload==" No Authentication") 
   {
     console.log(obj.payload)
     return;
