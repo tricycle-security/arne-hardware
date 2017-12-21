@@ -18,7 +18,7 @@ util = rfid.util()
 util.debug = False
     
 while rfid.RUN:
-    print("Please place a clean card in front of the reader")
+    print("Please place a card in front of the reader")
     rfid.wait_for_tag()
     (error, data) = rfid.request()
     if not error and data == 16:

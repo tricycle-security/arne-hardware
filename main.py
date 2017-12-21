@@ -24,26 +24,12 @@ util = rfid.util()
 # hook to SIGINT to execute the cleanup script
 signal.signal(signal.SIGINT, rfid.end_read)
 
-def parse_args():
-    # store commandline arguments
-    parser = argparse.ArgumentParser(description='Trycicle security RFID card reader and preparer')
-    parser.add_argument('-p', '--prepare', action='store_true', help='Prepare cards with custom key')
-    args = parser.parse_args()
-
-    return args
 
 # main loop
 def main():
-    args = parse_args()
+    while rfid.RUN:
+        emit_userid()
 
-    if args.prepare:
-        while rfid.RUN:
-            prepare_card()
-    elif not args.prepare:
-        while rfid.RUN:
-            emit_userid()
-    else:
-        exit()
 
 def emit_userid():
     """
@@ -80,11 +66,11 @@ def emit_userid():
                         sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
                         rfid.stop_crypto()  # deauthenticate the card and clear keys
                 else:
-                    print(JSONEncoder().encode({"payload": "noauth", "error": 1}))
+                    print(JSONEncoder().encode({"payload": "No authentication", "error": 1}))
                     sys.stdout.flush()
 
     elif tag_type is not None:
-        print(JSONEncoder().encode({"payload": "unknowncard", "error": 1}))
+        print(JSONEncoder().encode({"payload": "Unknown card", "error": 1}))
         sys.stdout.flush()
 
 def prepare_card():
@@ -122,14 +108,6 @@ def prepare_card():
             util.deauth()
             rfid.RUN = False
 
-def generate_userid():
-    """
-    Generated a pseudo-random userid to be written to card
-
-    Returns a userid byte array
-    """
-    user_id = map(ord, ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for c in range(16)))
-    return user_id
 
 if __name__ == "__main__":
     main()
