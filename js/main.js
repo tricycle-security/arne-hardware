@@ -34,9 +34,7 @@ firebase.initializeApp(configFile.config);  //initialize Firebase
   cardID=obj.payload; 
   console.log("CardID:" + cardID);
   initializeAndAuthenticate(); 
-
  })
-
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
@@ -62,7 +60,7 @@ function validiateAuthtentication()
   {
     if (user!=null)  
     {
-      console.log("Logged in succesfully"); //check if authtication succeeded
+      console.log("Pole Logged in succesfully"); //check if authtication succeeded
       checkIfCardIsActive(cardID);
       return;  
     } 
@@ -77,7 +75,7 @@ function validiateAuthtentication()
     var uuid = (snapshot.val().uuid);
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
-      throw new Error('Card is not active!');
+      console.log("Card is not authorized to check in"); 
     } 
 
     else 
@@ -96,7 +94,7 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     var responder = (snapshot.val());
     if (responder !== true) 
     {
-      throw new Error('User is not a responder');
+      console.log("Card is not authorized to check in"); 
     }
 
     else 
@@ -117,15 +115,10 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
       if (onLocation==true) {
-        //socket.emit('message', {'content': "Hello, Stranger!"})
-      console.log("Succesfully checked in!") 
-      html.sendStatus('Succesfully checked in!');
-      return;
-    }
-    else {
-      console.log("Succesfully checked out!")
-      html.sendStatus('Succesfully checked out!'); 
-      return;
-    }
+        console.log("Succesfully checked in!") 
+      }
+      else {
+        console.log("Succesfully checked out!")
+      }
   });
 }

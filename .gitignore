@@ -1,5 +1,6 @@
 examples/
 .vscode/
+__pycache__/
 keyfile
 js/hellonode.js
 js/config.js
