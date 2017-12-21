@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <title>Socket.io</title>
-        <script src="/socket.io/socket.io.js"> </script>
+        <script src="../socket.io/socket.io.js"> </script>
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"> </script>
             
 
@@ -11,14 +11,14 @@
  
     <body>
         <h1>ARNE </h1>
-        <font size="20"><p id="message" ></p> </font>
+        <font size="23"><p id="message" ></p> </font>
 
         <script>
-        var socket = io.connect('http://localhost:8080');
-        socket.on('update-value', function (value) { // When a 'update-value' event is received, execute the following code.
-        console.log('received new value', value);
+        var socket = io.connect();
+        socket.on('message', function (message) { // When a 'update-value' event is received, execute the following code.
+        console.log('received new value', message);
 
-        $('#message').html(value);
+        $('#message').html(message);
 });
             
         </script> 

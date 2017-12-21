@@ -2,30 +2,41 @@ var firebase = require('firebase');
 var configFile = require('./config.js');
 var html = require('./server.js');
 
-/*
-html1="./html/pleasecheckin.html"
-html2="./html/checkedin.html"
-html3="./html/checkedout.html"
-*/
-//html.startWebserver();
-html.sendStatus('Please check in');
+var http = require('http');
+var fs = require('fs');
+
+var server = http.createServer(function(req, res) {
+    fs.readFile('html/index.html', 'utf-8', function(error, content) {
+        res.writeHead(200, {"Content-Type": "text/html"});
+        res.end(content);
+    });
+});
+var io = require('socket.io').listen(server);
+server.listen(8080);
+  
+//console.log('message from main:', message);
+      
+socket.emit('testmessage', { hello: 'world' });
+
 firebase.initializeApp(configFile.config);  //initialize Firebase
 
  console.log("Please check in");
- var cardID = "EkbgGG7UodDNotGb"
- initializeAndAuthenticate(); 
-
- /*var pyshell = require('python-shell');
+ var cardID;
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
-
  {
-  cardID = message; 
+  if (message == "E1" || message == "E2") {
+  console.log('Card is not valid')
+  return; 
+ }
+  cardID = message;
+  var obj = JSON.parse(message)
+  cardID=obj.payload; 
   console.log("CardID:" + cardID);
-  
+  initializeAndAuthenticate(); 
 
- });
-*/
+ })
+
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
@@ -106,12 +117,15 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
       if (onLocation==true) {
+        //socket.emit('message', {'content': "Hello, Stranger!"})
       console.log("Succesfully checked in!") 
-      html.sendStatus('Succesfully checked in!'); 
+      html.sendStatus('Succesfully checked in!');
+      return;
     }
     else {
       console.log("Succesfully checked out!")
       html.sendStatus('Succesfully checked out!'); 
+      return;
     }
   });
 }
