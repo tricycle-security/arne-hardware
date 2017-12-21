@@ -8,9 +8,19 @@ var pyshell = require('python-shell');
  var cardID;
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
-
  {
-  cardID = message; 
+  if (message == "E1" || message == "E2") {
+  console.log('Card is not valid')
+  return; 
+ }
+  cardID = message;
+  var obj = JSON.parse(message)
+  if (obj.payload=="Unknown Card" || obj.payload==" No Authentication") 
+  {
+    console.log(obj.payload)
+    return;
+  }
+  cardID=obj.payload; 
   console.log("CardID:" + cardID);
   initializeAndAuthenticate(); 
 
@@ -41,7 +51,7 @@ function validiateAuthtentication()
   {
     if (user!=null)  
     {
-      console.log("Logged in succesfully"); //check if authtication succeeded
+      console.log("Pole Logged in succesfully"); //check if authtication succeeded
       checkIfCardIsActive(cardID);
       
     } else 
@@ -59,7 +69,7 @@ function validiateAuthtentication()
     var uuid = (snapshot.val().uuid);
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
-      throw new Error('Card is not active!');
+      console.log("Card is not authorized to check in"); 
     } 
 
     else 
@@ -77,7 +87,7 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     var responder = (snapshot.val());
     if (responder !== true) 
     {
-      throw new Error('User is not a responder');
+      console.log("Card is not authorized to check in"); 
     }
 
     else 
@@ -97,5 +107,11 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         onLocation: onLocation,
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
+      if (onLocation==true) {
+        console.log("Succesfully checked in!") 
+      }
+      else {
+        console.log("Succesfully checked out!")
+      }
   });
 }
