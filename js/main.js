@@ -1,12 +1,11 @@
 var firebase = require('firebase');
 var configFile = require('./config.js');
-//var html = require('./server.js');
 var pyshell = require('python-shell');
 var http = require('http');
 var fs = require('fs');
 
 var server = http.createServer(function(req, res) {
-    fs.readFile('html/index.html', 'utf-8', function(error, content) {
+    fs.readFile('index.html', 'utf-8', function(error, content) {
         res.writeHead(200, {"Content-Type": "text/html"});
         res.end(content);
     });
@@ -14,8 +13,11 @@ var server = http.createServer(function(req, res) {
 var io = require('socket.io').listen(server);
 server.listen(8080);
 
-io.on('connection', function(socket) {
-  socket.emit('testmessage', { hello: 'world' });
+
+io.on('connection', function(socket) 
+{
+  socket.emit('sendStatus', {messages: 'Please check in' });
+
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
 
@@ -24,16 +26,18 @@ firebase.initializeApp(configFile.config);  //initialize Firebase
  rfid = new pyshell('main.py');
  rfid.on('message', function(message)
  {
-  if (message == "E1" || message == "E2") {
-  console.log('Card is not valid')
-  return; 
+    if (message == "E1" || message == "E2") {
+    console.log('Card is not valid' + 'Errorcode:' + message)
+    return; 
  }
-  cardID = message;
-  var obj = JSON.parse(message)
-  cardID=obj.payload; 
-  console.log("CardID:" + cardID);
-  initializeAndAuthenticate(); 
- })
+    cardID = message;
+    var obj = JSON.parse(message)
+    cardID = obj.payload; 
+    console.log("CardID:" + cardID);
+    initializeAndAuthenticate(); 
+
+ });
+
 var database = firebase.database(); //get reference to the database service
 function initializeAndAuthenticate() 
 {
@@ -59,7 +63,7 @@ function validiateAuthtentication()
   {
     if (user!=null)  
     {
-      console.log("Pole Logged in succesfully"); //check if authtication succeeded
+      console.log("Logged in succesfully"); //check if authtication succeeded
       checkIfCardIsActive(cardID);
       return;  
     } 
@@ -67,21 +71,22 @@ function validiateAuthtentication()
 }
  
  function checkIfCardIsActive(cardID) 
-{ console.log("Checking if card is active....")
+{
+  //socket.emit('sendStatus', { messages: 'Checking if card is active....'});  
+  //console.log("Checking if card is active....")
   database.ref('cardinfo/' + cardID).once('value').then(function(snapshot)
   {
     var cardStatus = (snapshot.val().status);
     var uuid = (snapshot.val().uuid);
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
-      console.log("Card is not authorized to check in"); 
+      console.log("Card is not active"); 
     } 
 
     else 
     {
       console.log("Checking if user is Responder..."); 
-      checkIfUserIsResponder(uuid);
-       
+      checkIfUserIsResponder(uuid);   
     }
   });
 }
@@ -93,7 +98,7 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     var responder = (snapshot.val());
     if (responder !== true) 
     {
-      console.log("Card is not authorized to check in"); 
+      console.log("You are not authorized to check in!"); 
     }
 
     else 
@@ -113,13 +118,29 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         onLocation: onLocation,
         uuid: uuid //for set function it is mandotory to write to all database values even if it does'nt change    
       });
-      if (onLocation==true) {
-        console.log("Succesfully checked in!") 
+      if (onLocation==true) 
+      {
+        console.log("Succesfully checked in!")
+        database.ref('userinfo/' + 'usergeninfo/' + uuid + '/fname').once('value').then(function(snapshot)
+        { 
+          var fname = (snapshot.val()); 
+          socket.emit('sendStatus', { messages: 'Welcome\xa0' + fname });
+          console.log('Welkom\xa0' + fname);
+          return;
+        });    
       }
-      else {
+    else 
+      {
         console.log("Succesfully checked out!")
-      }
-  });
-}
+        database.ref('userinfo/' + 'usergeninfo/' + uuid + '/fname').once('value').then(function(snapshot)
+        {
+          var fname2 = (snapshot.val()); 
+          socket.emit('sendStatus', { messages: 'Good bye\xa0' + fname2 + "!"});
+          console.log('Tot ziens!\xa0' + fname2);
+          return;
 
-});  //for emit
+        });   
+      } 
+  });
+ }
+}); //close bracket for emit function
