@@ -1,7 +1,7 @@
 var firebase = require('firebase');
 var configFile = require('./config.js');
-var html = require('./server.js');
-
+//var html = require('./server.js');
+var pyshell = require('python-shell');
 var http = require('http');
 var fs = require('fs');
 
@@ -13,10 +13,9 @@ var server = http.createServer(function(req, res) {
 });
 var io = require('socket.io').listen(server);
 server.listen(8080);
-  
-//console.log('message from main:', message);
-      
-socket.emit('testmessage', { hello: 'world' });
+
+io.on('connection', function(socket) {
+  socket.emit('testmessage', { hello: 'world' });
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
 
@@ -122,3 +121,5 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
       }
   });
 }
+
+});  //for emit
