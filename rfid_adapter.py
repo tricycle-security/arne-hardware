@@ -5,7 +5,7 @@ from pirc522 import RFID
 
 class rfid_adapter(RFID):
     # GLOBALS
-    FACTORY_KEY = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
+    FACTORY_KEY = (0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)
     RUN = True
 
     def get_key_from_file(self, path):

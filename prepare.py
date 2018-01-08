@@ -6,6 +6,7 @@ import string
 import rfid_adapter
 import sys
 import signal
+from json import JSONEncoder
 
 rfid = rfid_adapter.rfid_adapter()
 util = rfid.util()
@@ -15,6 +16,7 @@ signal.signal(signal.SIGINT, rfid.end_read)
 def main():
     banner()
     print("\nPlease place a factory fresh card infront of the RFID reader")
+    print("\nKEEP THE CARD IN FRONT OF THE READER DURING THIS PROCESS")
     print("------------------------------------------------------------\n")
     while rfid.RUN:
         prepare_card()
@@ -43,10 +45,31 @@ def prepare_card():
                     if not write_error:
                         print("Write successful! writen {} to card on S0B1\n".format(rfid.format_userid(user_id)))
                         read_error, data = rfid.read(1)
-                        print("Reading back data, please confirm: {}".format(rfid.format_userid(data)))
-                        prompt_confirm()
+                        print(data)
+                        if not read_error:
+                            print("Reading back data unique user id: {}\n".format(rfid.format_userid(data)))                        
+
+                            print("Writing keys to card\n-----------------------")
+                            for block in range(16):
+                                key_error = util.write_trailer(block, rfid.FACTORY_KEY, (0xFF, 0x07, 0x80), 0x42, rfid.FACTORY_KEY)
+                                if not key_error:
+                                    print("Written key to block {}".format(block))
+                                else: 
+                                    print("Key write failed for block {}".format(block))
+                            if not key_error:
+                                print("Changing auth key to new value")
+                                util.auth(rfid.auth_a, rfid.FACTORY_KEY)
+                                auth_error = util.do_auth(1)
+                                
+                                read_error, payload = rfid.read(1)
+                                if not read_error and not auth_error:
+                                   print(JSONEncoder().encode({"payload": rfid.format_userid(payload), "error": 0}))
+                                else:
+                                    print(JSONEncoder().encode({"payload": "failed", "error": 1}))
+                        else:
+                            print("Could not read back unique user id")
                     else:
-                        print("Write failed! writen nothing to card.")
+                        print("Write failed! writen nothing to card")
                 else:
                     print("Please provide a factory fresh card! and try again")
                     rfid.cleanup()
@@ -54,6 +77,7 @@ def prepare_card():
 
     rfid.RUN = False
     rfid.cleanup()
+
 
 
 def write_userid(block):
