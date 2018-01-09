@@ -11,8 +11,6 @@ import time
 import RPi.GPIO as GPIO
 from json import JSONEncoder
 
-# supress gpio warning messages to not flood stdout
-GPIO.setwarnings(False)
 # block where our data resides
 BLOCK = 1
 CURRENT_SCAN_TIME = None

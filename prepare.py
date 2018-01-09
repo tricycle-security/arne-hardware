@@ -45,7 +45,6 @@ def prepare_card():
                     if not write_error:
                         print("Write successful! writen {} to card on S0B1\n".format(rfid.format_userid(user_id)))
                         read_error, data = rfid.read(1)
-                        print(data)
                         if not read_error:
                             print("Reading back data unique user id: {}\n".format(rfid.format_userid(data)))                        
 
