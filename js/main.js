@@ -16,8 +16,18 @@ server.listen(8080);
 
 io.on('connection', function(socket) 
 {
+  //socket.emit('sendStatus', {messages: 'Please check in' });
+
+function resetCheckedIn() {
   socket.emit('sendStatus', {messages: 'Please check in' });
 
+}
+
+var resetMessage;
+function checkedIn() {
+  clearTimeout(resetMessage)
+  resetMessage = setTimeout(resetCheckedIn, 3000)
+}
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
 
@@ -126,6 +136,7 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
           var fname = (snapshot.val()); 
           socket.emit('sendStatus', { messages: 'Welcome\xa0' + fname });
           console.log('Welkom\xa0' + fname);
+          checkedIn()
           return;
         });    
       }
@@ -136,7 +147,8 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         {
           var fname2 = (snapshot.val()); 
           socket.emit('sendStatus', { messages: 'Good bye\xa0' + fname2 + "!"});
-          console.log('Tot ziens!\xa0' + fname2);
+          console.log('Good bye\xa0' + fname2 + "!");
+          checkedIn()
           return;
 
         });   
