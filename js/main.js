@@ -3,6 +3,8 @@ var configFile = require('./config.js');
 var pyshell = require('python-shell');
 
  firebase.initializeApp(configFile.config);  //initialize Firebase
+ initializeAndAuthenticate(); 
+ validiateAuthtentication();
  console.log("Please check in");
  
  var cardID;
@@ -22,8 +24,8 @@ var pyshell = require('python-shell');
   }
   cardID=obj.payload; 
   console.log("CardID:" + cardID);
-  initializeAndAuthenticate(); 
-
+  checkIfCardIsActive(cardID);
+  
  });
 
 var database = firebase.database(); //get reference to the database service
@@ -41,7 +43,7 @@ function initializeAndAuthenticate()
     console.log(errorMessage);
   });
  console.log("Authenticating...");
- validiateAuthtentication();
+ 
 }
 
 function validiateAuthtentication()
@@ -52,7 +54,7 @@ function validiateAuthtentication()
     if (user!=null)  
     {
       console.log("Pole Logged in succesfully"); //check if authtication succeeded
-      checkIfCardIsActive(cardID);
+      
       
     } else 
      {
