@@ -13,10 +13,9 @@ var server = http.createServer(function(req, res) {
 var io = require('socket.io').listen(server);
 server.listen(8080);
 
-
 io.on('connection', function(socket) 
 {
-  //socket.emit('sendStatus', {messages: 'Please check in' });
+  socket.emit('sendStatus', {messages: 'Please check in' });
 
 function resetCheckedIn() {
   socket.emit('sendStatus', {messages: 'Please check in' });
@@ -26,7 +25,7 @@ function resetCheckedIn() {
 var resetMessage;
 function checkedIn() {
   clearTimeout(resetMessage)
-  resetMessage = setTimeout(resetCheckedIn, 3000)
+  resetMessage = setTimeout(resetCheckedIn, 2000)
 }
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
@@ -42,8 +41,12 @@ firebase.initializeApp(configFile.config);  //initialize Firebase
  }
     cardID = message;
     var obj = JSON.parse(message)
+    if (obj.payload=="Unknown Card" || obj.payload==" No Authentication") 
+      {
+        console.log(obj.payload)
+        return;
+      }
     cardID = obj.payload; 
-    console.log("CardID:" + cardID);
     initializeAndAuthenticate(); 
 
  });
