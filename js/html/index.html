@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Socket.io</title>
+    <script src="/socket.io/socket.io.js"> </script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"> </script>
+
+
+</head>
+
+<body style="background-color:#26a4b3;">
+<font size="26" color="FloralWhite" face="Roboto">   
+<center><h1>ARNE </h1></center>
+<center><p id="message"></p></font></center>
+        <script>
+            var socket = io.connect();
+            socket.on('sendStatus', function (message) { // When a 'update-value' event is received, execute the following code.
+                console.log('received new value', message);
+    
+                $('#message').html(message.messages);
+            });   
+        </script>
+</body>
+
+</html>
