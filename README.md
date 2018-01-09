@@ -28,7 +28,7 @@ You can use [this](https://i.imgur.com/DRsymlo.png) image for reference.
 | MISO | 21    | GPIO9 - MISO  | Green |
 | IRQ  | 18    | GPIO24        | Yellow|
 | GND  | 20    | GND           | Orange|
-| RST  | 22    | GPIO25        | Red   |
+| RST  | 22    | GPIO25        | Black |
 | 3.3V | 17    | 3V3           | Brown |
 
 ## Usage

@@ -68,10 +68,13 @@ def prepare_card():
                                     print(JSONEncoder().encode({"payload": "failed", "error": 1}))
                         else:
                             print("Could not read back unique user id")
+                            print(JSONEncoder().encode({"payload": "failed", "error": 1}))
                     else:
                         print("Write failed! writen nothing to card")
+                        print(JSONEncoder().encode({"payload": "failed", "error": 1}))
                 else:
                     print("Please provide a factory fresh card! and try again")
+                    print(JSONEncoder().encode({"payload": "failed", "error": 1}))
                     rfid.cleanup()
                     exit()
 
