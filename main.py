@@ -11,8 +11,6 @@ import time
 import RPi.GPIO as GPIO
 from json import JSONEncoder
 
-# supress gpio warning messages to not flood stdout
-GPIO.setwarnings(False)
 # block where our data resides
 BLOCK = 1
 CURRENT_SCAN_TIME = None
@@ -24,26 +22,12 @@ util = rfid.util()
 # hook to SIGINT to execute the cleanup script
 signal.signal(signal.SIGINT, rfid.end_read)
 
-def parse_args():
-    # store commandline arguments
-    parser = argparse.ArgumentParser(description='Trycicle security RFID card reader and preparer')
-    parser.add_argument('-p', '--prepare', action='store_true', help='Prepare cards with custom key')
-    args = parser.parse_args()
-
-    return args
 
 # main loop
 def main():
-    args = parse_args()
+    while rfid.RUN:
+        emit_userid()
 
-    if args.prepare:
-        while rfid.RUN:
-            prepare_card()
-    elif not args.prepare:
-        while rfid.RUN:
-            emit_userid()
-    else:
-        exit()
 
 def emit_userid():
     """
@@ -80,56 +64,12 @@ def emit_userid():
                         sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
                         rfid.stop_crypto()  # deauthenticate the card and clear keys
                 else:
-                    print(JSONEncoder().encode({"payload": "noauth", "error": 1}))
+                    print(JSONEncoder().encode({"payload": "No authentication", "error": 1}))
                     sys.stdout.flush()
 
     elif tag_type is not None:
-        print(JSONEncoder().encode({"payload": "unknowncard", "error": 1}))
+        print(JSONEncoder().encode({"payload": "Unknown card", "error": 1}))
         sys.stdout.flush()
-
-def prepare_card():
-    """
-    Prepares a card in factory state to be used in the production environment with a given keyfile
-    """
-    print("Please place a clean card in front of the reader")
-    # wait for a rfid tag event to continue the loop
-    rfid.wait_for_tag()
-    # request tag type from tag 
-    (error, data) = rfid.request()
-    # if tag is present and is a mifare card
-    if not error and data == 16:
-        # get the uid of the tag
-        # a method to get uid from cards in sequence
-        (error, uid) = rfid.anticoll()
-        if not error:
-            # set the uid for the card we are working with
-            util.set_tag(uid)
-            # set the auth key for the current selected card with the factory key
-            util.auth(rfid.auth_a, (0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF))
-            # generate a pseudo-random userid
-            user_id = generate_userid()
-            # write the userid to our block
-            util.rewrite(BLOCK, user_id)
-            # get the key from the keyfile
-            error, new_key = rfid.get_key_from_file('keyfile')
-            # change key for every trailer block
-            if not error and new_key is not None:
-                for sector in range(15):
-                    print("Writing key to sector: " + str(sector))
-                    util.write_trailer(sector, new_key, (0xFF, 0x07, 0x80), 0x69, new_key)
-            else:
-                print("Could not get key from file")
-            util.deauth()
-            rfid.RUN = False
-
-def generate_userid():
-    """
-    Generated a pseudo-random userid to be written to card
-
-    Returns a userid byte array
-    """
-    user_id = map(ord, ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for c in range(16)))
-    return user_id
 
 if __name__ == "__main__":
     main()
