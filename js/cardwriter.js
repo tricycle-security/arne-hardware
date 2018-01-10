@@ -1,21 +1,25 @@
 var firebase = require('firebase');
 var configFile = require('./configcardwriter.js');
+var pyshell = require('python-shell');
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
 initializeAndAuthenticate();
 validiateAuthtentication();
 
 var cardID;
-rfid = new pyshell('preparecard.py');
+rfid = new pyshell('prepare.py');
+checkIfMessageIsJson(message);
+
 rfid.on('message', function(message)
 {
+  isJson(message);
  if (message == "E1" || message == "E2") {
  console.log('Card is not valid')
  return; 
 }
  cardID = message;
  var obj = JSON.parse(message)
- if (obj.payload=="Unknown Card" || obj.payload==" No Authentication") 
+ if (obj.payload=="failed")
  {
    console.log(obj.payload)
    return;
@@ -25,7 +29,6 @@ rfid.on('message', function(message)
  writeCardToFirebase(cardID); 
 
 });
-
 
 var database = firebase.database();
 function initializeAndAuthenticate() 
@@ -51,15 +54,15 @@ function validiateAuthtentication()
   {
     if (user!=null)  
     {
-      console.log("CardWriter Logged in succesfully"); //check if authtication succeeded
-      
+        console.log("CardWriter Logged in succesfully"); //check if authtentication succeeded
     } 
     else 
      {
-      return;
+        return;
      }
   });
 }
+
 function writeCardToFirebase(cardID) //write cardID to Firebase
 {
   database.ref('cardinfo/' + cardID).set(
@@ -70,3 +73,14 @@ function writeCardToFirebase(cardID) //write cardID to Firebase
   );
 }
 
+function checkIfMessageIsJson(message) 
+{
+  try 
+  {
+      JSON.parse(message);
+  } catch (e)
+  {
+      return false;
+  }
+  return true;
+}
