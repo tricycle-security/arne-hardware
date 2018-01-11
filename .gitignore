@@ -2,7 +2,7 @@ examples/
 .vscode/
 __pycache__/
 keyfile
-js/hellonode.js
+js/simulation.js
 js/config.js
 js/node_modules/
 js/configcardwriter.js
