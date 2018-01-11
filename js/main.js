@@ -15,10 +15,10 @@ server.listen(8080);
 
 io.on('connection', function(socket) 
 {
-  socket.emit('sendStatus', {messages: 'Please check in' });
+  socket.emit('sendStatus', {messages: 'Please check in', color: '#26a4b3' });
 
 function resetCheckedIn() {
-  socket.emit('sendStatus', {messages: 'Please check in' });
+  socket.emit('sendStatus', {messages: 'Please check in', color: '#26a4b3' });
 
 }
 
@@ -111,7 +111,7 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     if (responder !== true) 
     {
       console.log("You are not authorized to check in!");
-      socket.emit('sendStatus', {messages: "You are not authorized to check in!" });  
+      socket.emit('sendStatus', {messages: "You are not authorized to check in!",color: 'red' });  
     }
 
     else 
@@ -137,7 +137,7 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         database.ref('userinfo/' + 'usergeninfo/' + uuid + '/fname').once('value').then(function(snapshot)
         { 
           var fname = (snapshot.val()); 
-          socket.emit('sendStatus', { messages: 'Welcome\xa0' + fname });
+          socket.emit('sendStatus', { messages: 'Welcome\xa0' + fname, color: 'green' });
           console.log('Welkom\xa0' + fname);
           checkedIn()
           return;
@@ -149,7 +149,7 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         database.ref('userinfo/' + 'usergeninfo/' + uuid + '/fname').once('value').then(function(snapshot)
         {
           var fname2 = (snapshot.val()); 
-          socket.emit('sendStatus', { messages: 'Good bye\xa0' + fname2 + "!"});
+          socket.emit('sendStatus', { messages: 'Good bye\xa0' + fname2 + "!",color: 'purple'});
           console.log('Good bye\xa0' + fname2 + "!");
           checkedIn()
           return;
