@@ -8,26 +8,25 @@ validiateAuthtentication();
 
 var cardID;
 rfid = new pyshell('prepare.py');
-checkIfMessageIsJson(message);
-
 rfid.on('message', function(message)
 {
-  isJson(message);
- if (message == "E1" || message == "E2") {
- console.log('Card is not valid')
- return; 
-}
- cardID = message;
- var obj = JSON.parse(message)
- if (obj.payload=="failed")
- {
+  checkIfMessageIsJson(message);
+  if (message == "E1" || message == "E2")
+  {
+    console.log('Card is not valid')
+    return; 
+  }
+
+  cardID = message;
+  var obj = JSON.parse(message)
+  if (obj.payload=="failed")
+  {
    console.log(obj.payload)
    return;
- }
- cardID=obj.payload; 
- console.log("CardID:" + cardID);
- writeCardToFirebase(cardID); 
-
+  }
+  cardID=obj.payload; 
+  console.log("CardID:" + cardID);
+  writeCardToFirebase(cardID); 
 });
 
 var database = firebase.database();
@@ -69,10 +68,9 @@ function writeCardToFirebase(cardID) //write cardID to Firebase
     {
       status: "inactive",
       uuid: "none" // in the webapplication this value will be generated
-    }
-  );
+    });
 }
-
+ 
 function checkIfMessageIsJson(message) 
 {
   try 
