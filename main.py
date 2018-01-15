@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-import argparse
 import signal
 import sys
 import rfid_adapter
-import random
 import string
 import time
 import RPi.GPIO as GPIO
 from json import JSONEncoder
 
-# block where our data resides
 BLOCK = 1
 CURRENT_SCAN_TIME = None
 CURRENT_CARD = None
+BUZZER_PIN = 12  # set the buzzer pin variable to number 11
+CARDS = []
 # create rfid_adapter class
 rfid = rfid_adapter.rfid_adapter()
 # create rfid util class which makes helper function available
 util = rfid.util()
+# setup gpio pins for buzzer
+GPIO.setmode(GPIO.BOARD) 
+GPIO.setup(BUZZER_PIN, GPIO.OUT)
+
 # hook to SIGINT to execute the cleanup script
 signal.signal(signal.SIGINT, rfid.end_read)
 
@@ -28,6 +31,24 @@ def main():
     while rfid.RUN:
         emit_userid()
 
+
+def buzz(pitch, duration):
+    """
+    Makes noise with the provided pitch and duration
+    """  
+    # create the function "buzz" and feed it the pitch and duration)
+    # in physics, the period (sec/cyc) is the inverse of the frequency
+    # (cyc/sec)
+    period = 1.0 / pitch
+    delay = period / 2  # calcuate the time for half of the wave
+    # the number of waves to produce is the duration times the frequency
+    cycles = int(duration * pitch)
+
+    for i in range(cycles):  # start a loop from 0 to the variable "cycles" calculated above
+        GPIO.output(BUZZER_PIN, True)  # set pin 18 to high
+        time.sleep(delay)  # wait with pin 18 high
+        GPIO.output(BUZZER_PIN, False)  # set pin 18 to low
+        time.sleep(delay)  # wait with pin 18 low
 
 def emit_userid():
     """
@@ -63,6 +84,13 @@ def emit_userid():
                         print(output)
                         sys.stdout.flush()  # clearing the stdout buffer to be ready for the next message      
                         rfid.stop_crypto()  # deauthenticate the card and clear keys
+                        
+                        if output in CARDS:
+                            buzz(800, 0.3) # check out sound
+                            CARDS.remove(output)
+                        else:
+                            buzz(1500, 0.3) # check in sound
+                            CARDS.append(output)
                 else:
                     print(JSONEncoder().encode({"payload": "No authentication", "error": 1}))
                     sys.stdout.flush()
