@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-import argparse
 import signal
 import sys
 import rfid_adapter
-import random
 import string
 import time
 import RPi.GPIO as GPIO
 from json import JSONEncoder
 
-# block where our data resides
 BLOCK = 1
 CURRENT_SCAN_TIME = None
 CURRENT_CARD = None
-BUZZER_PIN = 11  # set the buzzer pin variable to number 18
+BUZZER_PIN = 12  # set the buzzer pin variable to number 11
 CARDS = []
 # create rfid_adapter class
 rfid = rfid_adapter.rfid_adapter()
@@ -35,7 +32,10 @@ def main():
         emit_userid()
 
 
-def buzz(pitch, duration):  
+def buzz(pitch, duration):
+    """
+    Makes noise with the provided pitch and duration
+    """  
     # create the function "buzz" and feed it the pitch and duration)
     # in physics, the period (sec/cyc) is the inverse of the frequency
     # (cyc/sec)
