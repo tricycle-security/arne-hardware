@@ -21,7 +21,7 @@
             socket.on('sendStatus', function (message) { // When a 'update-value' event is received, execute the following code.
                 console.log('received new value', message);
     
-                $('#message').html(message.messages);
+                $('#message').text(message.messages);
                 document.body.style.background = message.color;
                 
             });   
