@@ -31,7 +31,7 @@ def main():
             if not error:
                 error = util.set_tag(uid)
                 if not error:
-                    util.auth(rfid.auth_a, rfid.FACTORY_KEY)
+                    util.auth(rfid.auth_a, rfid.get_key_from_file('keyfile')[1])
                     error = util.rewrite(1, [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                     if not error:
                         for sectors in range(16):

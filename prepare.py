@@ -49,15 +49,16 @@ def prepare_card():
                             print("Reading back data unique user id: {}\n".format(rfid.format_userid(data)))                        
 
                             print("Writing keys to card\n-----------------------")
+                            error, key = rfid.get_key_from_file('keyfile')
                             for block in range(16):
-                                key_error = util.write_trailer(block, rfid.FACTORY_KEY, (0xFF, 0x07, 0x80), 0x42, rfid.FACTORY_KEY)
+                                key_error = util.write_trailer(block, key, (0xFF, 0x07, 0x80), 0x42, key)
                                 if not key_error:
                                     print("Written key to block {}".format(block))
                                 else: 
                                     print("Key write failed for block {}".format(block))
                             if not key_error:
                                 print("Changing auth key to new value")
-                                util.auth(rfid.auth_a, rfid.FACTORY_KEY)
+                                util.auth(rfid.auth_a, key)
                                 auth_error = util.do_auth(1)
                                 
                                 read_error, payload = rfid.read(1)
