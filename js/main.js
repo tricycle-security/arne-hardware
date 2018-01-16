@@ -25,7 +25,7 @@ function resetCheckedIn() {
 var resetMessage;
 function checkedIn() {
   clearTimeout(resetMessage)
-  resetMessage = setTimeout(resetCheckedIn, 2000)
+  resetMessage = setTimeout(resetCheckedIn, 3000)
 }
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
@@ -92,7 +92,8 @@ function validiateAuthtentication()
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
       console.log("Card is not active");
-      socket.emit('sendStatus', {messages: 'Card is not active!' }); 
+      socket.emit('sendStatus', {messages: 'Card is not active!', color:'red' });
+      checkedIn(); 
     } 
 
     else 
@@ -111,7 +112,8 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     if (responder !== true) 
     {
       console.log("You are not authorized to check in!");
-      socket.emit('sendStatus', {messages: "You are not authorized to check in!",color: 'red' });  
+      socket.emit('sendStatus', {messages: "You are not authorized to check in!",color: 'red' }); 
+      checkedIn(); 
     }
 
     else 
