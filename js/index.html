@@ -5,12 +5,14 @@
     <meta charset="utf-8" />
     <title>Socket.io</title>
     <script src="/socket.io/socket.io.js"> </script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"> </script>
-
-
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"> </script> 
 </head>
 
-<body style="background-color:#26a4b3;">
+<style>
+
+</style>
+
+<body>
 <font size="26" color="FloralWhite" face="Roboto">   
 <center><h1>ARNE </h1></center>
 <center><p id="message"></p></font></center>
@@ -20,8 +22,10 @@
                 console.log('received new value', message);
     
                 $('#message').html(message.messages);
+                document.body.style.background = message.color;
+                
             });   
         </script>
-</body>
 
+    </body>
 </html>

@@ -5,7 +5,7 @@ var http = require('http');
 var fs = require('fs');
 
 var server = http.createServer(function(req, res) {
-    fs.readFile('index.html', 'utf-8', function(error, content) {
+    fs.readFile('/html/index.html', 'utf-8', function(error, content) {
         res.writeHead(200, {"Content-Type": "text/html"});
         res.end(content);
     });
@@ -15,17 +15,17 @@ server.listen(8080);
 
 io.on('connection', function(socket) 
 {
-  socket.emit('sendStatus', {messages: 'Please check in' });
+  socket.emit('sendStatus', {messages: 'Please check in', color: '#26a4b3' });
 
 function resetCheckedIn() {
-  socket.emit('sendStatus', {messages: 'Please check in' });
+  socket.emit('sendStatus', {messages: 'Please check in', color: '#26a4b3' });
 
 }
 
 var resetMessage;
 function checkedIn() {
   clearTimeout(resetMessage)
-  resetMessage = setTimeout(resetCheckedIn, 2000)
+  resetMessage = setTimeout(resetCheckedIn, 3000)
 }
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
@@ -85,15 +85,15 @@ function validiateAuthtentication()
  
  function checkIfCardIsActive(cardID) 
 {
-  //socket.emit('sendStatus', { messages: 'Checking if card is active....'});  
-  //console.log("Checking if card is active....")
   database.ref('cardinfo/' + cardID).once('value').then(function(snapshot)
   {
     var cardStatus = (snapshot.val().status);
     var uuid = (snapshot.val().uuid);
     if (cardStatus !== 'active') //check if card is activated by the administrator
     {
-      console.log("Card is not active"); 
+      console.log("Card is not active");
+      socket.emit('sendStatus', {messages: 'Card is not active!', color:'red' });
+      checkedIn(); 
     } 
 
     else 
@@ -111,7 +111,9 @@ function checkIfUserIsResponder(uuid)  //It is important that a user is a respon
     var responder = (snapshot.val());
     if (responder !== true) 
     {
-      console.log("You are not authorized to check in!"); 
+      console.log("You are not authorized to check in!");
+      socket.emit('sendStatus', {messages: "You are not authorized to check in!",color: 'red' }); 
+      checkedIn(); 
     }
 
     else 
@@ -137,19 +139,19 @@ function changeStatus(uuid) //write the status data to the Firbase Database.
         database.ref('userinfo/' + 'usergeninfo/' + uuid + '/fname').once('value').then(function(snapshot)
         { 
           var fname = (snapshot.val()); 
-          socket.emit('sendStatus', { messages: 'Welcome\xa0' + fname });
+          socket.emit('sendStatus', { messages: 'Welcome\xa0' + fname, color: 'green' });
           console.log('Welkom\xa0' + fname);
           checkedIn()
           return;
         });    
       }
-    else 
+      else 
       {
         console.log("Succesfully checked out!")
         database.ref('userinfo/' + 'usergeninfo/' + uuid + '/fname').once('value').then(function(snapshot)
         {
           var fname2 = (snapshot.val()); 
-          socket.emit('sendStatus', { messages: 'Good bye\xa0' + fname2 + "!"});
+          socket.emit('sendStatus', { messages: 'Good bye\xa0' + fname2 + "!",color: 'purple'});
           console.log('Good bye\xa0' + fname2 + "!");
           checkedIn()
           return;
