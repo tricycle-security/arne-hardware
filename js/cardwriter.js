@@ -3,17 +3,16 @@ var configFile = require('./configcardwriter.js');
 var pyshell = require('python-shell');
 
 firebase.initializeApp(configFile.config);  //initialize Firebase
-initializeAndAuthenticate();
-validiateAuthtentication();
+initializeAndAuthenticate(); 
+validiateAuthtentication(); //validate authentication with Firebase so Firebase can write and retrieve data.
 
 var cardID;
 rfid = new pyshell('prepare.py');
 rfid.on('message', function(message)
 {
-  checkIfMessageIsJson(message);
-  if (message == "E1" || message == "E2")
+  if (message == "E1" || message == "E2" || !checkIfMessageIsJson(message))
   {
-    console.log('Card is not valid')
+    console.log('received:\xa0' + message)
     return; 
   }
 
@@ -26,7 +25,7 @@ rfid.on('message', function(message)
   }
   cardID=obj.payload; 
   console.log("CardID:" + cardID);
-  writeCardToFirebase(cardID); 
+  writeCardToFirebase(cardID);
 });
 
 var database = firebase.database();
@@ -69,6 +68,8 @@ function writeCardToFirebase(cardID) //write cardID to Firebase
       status: "inactive",
       uuid: "none" // in the webapplication this value will be generated
     });
+    console.log("Card written succesfully")
+
 }
  
 function checkIfMessageIsJson(message) 
