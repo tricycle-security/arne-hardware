@@ -121,7 +121,7 @@ while True:
 
 ## Setting up NodeJS
 
-To make the connection to Firebase you will need to install NodeJS. 
+To start the main program 
 Run the following commands as root in a terminal:
 
 Step 1. npm install npm@latest -g //Install latest version of NPM.
@@ -129,3 +129,13 @@ Step 1. npm install npm@latest -g //Install latest version of NPM.
 Step 2. npm init //initialize 
 
 Step 3. npm install --save firebase //Do this command in the JS folder!
+
+Step 4. Setup the config.js file (see exampleconfig.js on how to do this)
+
+Step 5. Make sure the Python files are in the correct location.
+
+Step 6. Run the program main.js by executing the following command in your terminal: "node main.js"
+
+## Cardwriter Program
+
+The cardwriter program can write only one card at a time. Run this program by  executing the command "node cardwriter.js" in your terminal. Then hold the card for the check in pole. The card will be written to Firebase and will be set as inactive. In the webapplication the administrator can pair the card with a user. 
