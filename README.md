@@ -123,6 +123,9 @@ while True:
 
 To make the connection to Firebase you will need to install NodeJS. 
 Run the following commands as root in a terminal:
+
 Step 1. npm install npm@latest -g //Install latest version of NPM.
+
 Step 2. npm init //initialize 
+
 Step 3. npm install --save firebase //Do this command in the JS folder!
